@@ -14,7 +14,7 @@ require('./config/passportConfig');
 // (Optional) if using sessions:
 app.use(bodyParser.json());
 app.use(cors({
-  origin: "http://localhost:3000", // Allow the React app's origin
+  origin: "http://localhost:5173", // Allow the React app's origin
   methods: ["GET", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true // Set to true if you are sending cookies or authorization headers
