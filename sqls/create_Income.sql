@@ -1,0 +1,14 @@
+CREATE TABLE income (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    source VARCHAR(255) NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    income_date DATE NOT NULL,
+    descriptions TEXT,
+    category VARCHAR(100),
+    payment_method VARCHAR(50),
+    note TEXT,
+    userId INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (userId) REFERENCES users(user_id) ON DELETE CASCADE
+);
