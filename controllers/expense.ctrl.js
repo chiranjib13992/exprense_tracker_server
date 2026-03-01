@@ -45,9 +45,39 @@ exports.getExpenses = async (req, res, next) => {
     try {
         const id = req.user.id;
         const query = `
-        SELECT ex.*, u.name as fullname, u.phone as phone, "expense" as type FROM expenses as ex
-        LEFT JOIN users as u on ex.userId = u.user_id
-        WHERE ex.userId = ${id}
+SELECT 
+    ex.item AS source,
+    ex.category AS category,
+    ex.id AS id,
+    ex.payment_method AS payment_method,
+    ex.amount AS amount,
+    ex.expense_date AS income_date,
+    u.name AS fullname,
+    u.phone AS phone,
+    'expense' AS type,
+    ex.purpose AS descriptions
+FROM expenses ex
+LEFT JOIN users u ON ex.userId = u.user_id
+WHERE ex.userId = ${id}
+
+UNION ALL
+
+SELECT 
+    inc.source AS source,
+    inc.category AS category,
+    inc.id AS id,
+    inc.payment_method AS payment_method,
+    inc.amount AS amount,
+    inc.income_date AS income_date,
+    u.name AS fullname,
+    u.phone AS phone,
+    'income' AS type,
+    inc.descriptions AS descriptions
+FROM income inc
+LEFT JOIN users u ON inc.userId = u.user_id
+WHERE inc.userId = ${id}
+
+ORDER BY income_date DESC;
         `
 
         const result = await executeQuery(query);
@@ -212,13 +242,11 @@ exports.getIncomeById = async (req, res) => {
     }
 };
 
-// Optional: Update income
 exports.updateIncome = async (req, res) => {
     try {
         const { id } = req.params;
         const { source, amount, date, description, category, payment_method, note } = req.body;
 
-        // Check if income exists
         const checkQuery = `SELECT id FROM income WHERE id = ? AND userId = ?`;
         const exists = await executeQuery(checkQuery, [id, req.user.id]);
 
@@ -262,12 +290,9 @@ exports.updateIncome = async (req, res) => {
     }
 };
 
-// Optional: Delete income
 exports.deleteIncome = async (req, res) => {
     try {
         const { id } = req.params;
-
-        // Check if income exists
         const checkQuery = `SELECT id FROM income WHERE id = ? AND userId = ?`;
         const exists = await executeQuery(checkQuery, [id, req.user.id]);
 
@@ -294,3 +319,107 @@ exports.deleteIncome = async (req, res) => {
         });
     }
 };
+
+exports.allDashboardData = async (req, res) => {
+    try {
+         const selectQuery = `
+          SELECT
+    COALESCE(
+        (SELECT SUM(amount)
+         FROM income
+         WHERE userId = ${req.user.id}
+           AND MONTH(income_date) = MONTH(CURRENT_DATE())
+           AND YEAR(income_date) = YEAR(CURRENT_DATE())
+        ),
+        0
+    )
+    -
+    COALESCE(
+        (SELECT SUM(amount)
+         FROM expenses
+         WHERE userId = ${req.user.id}
+           AND MONTH(expense_date) = MONTH(CURRENT_DATE())
+           AND YEAR(expense_date) = YEAR(CURRENT_DATE())
+        ),
+        0
+    ) AS totalBalance,
+
+    COALESCE(
+        (SELECT SUM(amount)
+         FROM income
+         WHERE userId = ${req.user.id}
+           AND MONTH(income_date) = MONTH(CURRENT_DATE())
+           AND YEAR(income_date) = YEAR(CURRENT_DATE())
+        ),
+        0
+    ) AS totalIncome,
+
+    COALESCE(
+        (SELECT SUM(amount)
+         FROM expenses
+         WHERE userId = ${req.user.id}
+           AND MONTH(expense_date) = MONTH(CURRENT_DATE())
+           AND YEAR(expense_date) = YEAR(CURRENT_DATE())
+        ),
+        0
+    ) AS totalExpense;
+
+        `;
+        const result = await executeQuery(selectQuery);
+        return res.status(200).json({
+            success: true,
+            dahboardData: result,
+        });
+    } catch (err) {
+        console.error("Error :", err);
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+}
+
+exports.addToSavings = async (req, res) => {
+     try {
+        const expenseId = req.body.expenseId;
+
+        if (!expenseId) {
+            return res.status(400).json({
+                success: false,
+                message: "incomeId are required"
+            });
+        }
+        if(expenseId){
+            const checkQuery = `SELECT id FROM income WHERE incomeId = ${expenseId}`;
+            const exists = await executeQuery(checkQuery);
+            if (exists.length > 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: "This income is already added to savings"
+                });
+            }
+        }
+
+        const insertQuery = `
+            INSERT INTO savings (incomeId)
+            VALUES (?)
+        `;
+
+        const result = await executeQuery(insertQuery, [
+            expenseId
+        ]);
+
+        return res.status(201).json({
+            success: true,
+            message: "Add to savings successfully",
+            expenseId: result.insertId
+        });
+
+    } catch (error) {
+        console.error("Error adding expense:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+}
