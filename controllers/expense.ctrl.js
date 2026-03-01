@@ -423,3 +423,54 @@ exports.addToSavings = async (req, res) => {
         });
     }
 }
+
+exports.getTransactionById = async (req, res) => {
+    try {
+        const { id, type } = req.body;
+
+        if (!id || !type) {
+            return res.status(400).json({
+                success: false,
+                message: "ID and type are required"
+            });
+        }
+
+        let tableName;
+
+        if (type === "expenses") {
+            tableName = "expenses";
+        } else if (type === "income") {
+            tableName = "income";
+        } else {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid transaction type"
+            });
+        }
+
+        const query = `
+            SELECT * FROM ${tableName}
+            WHERE id = ?
+        `;
+
+        const result = await executeQuery(query, [id]);
+        if (result.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Transaction not found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            transaction: result[0]
+        });
+
+    } catch (error) {
+        console.error("Error fetching transaction:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+};
