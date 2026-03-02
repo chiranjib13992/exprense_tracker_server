@@ -1,7 +1,7 @@
 const { executeQuery } = require('../config/db');
 exports.createExpense = async (req, res) => {
     try {
-        const { item, amount, date, purpose, payment_method, category, note } = req.body;
+        const { id, item, amount, date, purpose, payment_method, category, note } = req.body;
 
         if (!item || !amount || !date) {
             return res.status(400).json({
@@ -10,8 +10,40 @@ exports.createExpense = async (req, res) => {
             });
         }
 
+        if (id) {
+            const updateQuery = `
+                UPDATE expenses
+                SET item = ?, 
+                    amount = ?, 
+                    expense_date = ?, 
+                    purpose = ?, 
+                    payment_method = ?, 
+                    category = ?, 
+                    note = ?
+                WHERE id = ? AND userId = ?
+            `;
+
+            await executeQuery(updateQuery, [
+                item,
+                amount,
+                date,
+                purpose || null,
+                payment_method || null,
+                category || null,
+                note || null,
+                id,
+                req.user.id
+            ]);
+
+            return res.status(200).json({
+                success: true,
+                message: "Expense updated successfully"
+            });
+        }
+
         const insertQuery = `
-            INSERT INTO expenses (item, amount, expense_date, purpose, payment_method, category, note, userId)
+            INSERT INTO expenses 
+            (item, amount, expense_date, purpose, payment_method, category, note, userId)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
@@ -22,7 +54,7 @@ exports.createExpense = async (req, res) => {
             purpose || null,
             payment_method || null,
             category || null,
-            note,
+            note || null,
             req.user.id
         ]);
 
@@ -33,13 +65,13 @@ exports.createExpense = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Error adding expense:", error);
+        console.error("Error saving expense:", error);
         return res.status(500).json({
             success: false,
             message: "Internal Server Error"
         });
     }
-}
+};
 
 exports.getExpenses = async (req, res, next) => {
     try {
@@ -141,9 +173,8 @@ exports.getCategoryWiseExpenses = async (req, res) => {
 
 exports.createIncome = async (req, res) => {
     try {
-        const { source, amount, date, descriptions, category, payment_method, note } = req.body;
+        const { id, source, amount, date, descriptions, category, payment_method, note } = req.body;
 
-        // Validation
         if (!source || !amount || !date) {
             return res.status(400).json({
                 success: false,
@@ -151,9 +182,47 @@ exports.createIncome = async (req, res) => {
             });
         }
 
-        // Insert query for income table
+        if (id) {
+            const updateQuery = `
+                UPDATE income
+                SET source = ?,
+                    amount = ?,
+                    income_date = ?,
+                    descriptions = ?,
+                    category = ?,
+                    payment_method = ?,
+                    note = ?
+                WHERE id = ? AND userId = ?
+            `;
+
+            const result = await executeQuery(updateQuery, [
+                source,
+                amount,
+                date,
+                descriptions || null,
+                category || null,
+                payment_method || null,
+                note || null,
+                id,
+                req.user.id
+            ]);
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Income not found or unauthorized"
+                });
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: "Income updated successfully"
+            });
+        }
+
         const insertQuery = `
-            INSERT INTO income (source, amount, income_date, descriptions, category, payment_method, note, userId)
+            INSERT INTO income 
+            (source, amount, income_date, descriptions, category, payment_method, note, userId)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
@@ -175,7 +244,7 @@ exports.createIncome = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Error adding income:", error);
+        console.error("Error saving income:", error);
         return res.status(500).json({
             success: false,
             message: "Internal Server Error"
@@ -322,7 +391,7 @@ exports.deleteIncome = async (req, res) => {
 
 exports.allDashboardData = async (req, res) => {
     try {
-         const selectQuery = `
+        const selectQuery = `
           SELECT
     COALESCE(
         (SELECT SUM(amount)
@@ -380,7 +449,7 @@ exports.allDashboardData = async (req, res) => {
 }
 
 exports.addToSavings = async (req, res) => {
-     try {
+    try {
         const expenseId = req.body.expenseId;
 
         if (!expenseId) {
@@ -389,7 +458,7 @@ exports.addToSavings = async (req, res) => {
                 message: "incomeId are required"
             });
         }
-        if(expenseId){
+        if (expenseId) {
             const checkQuery = `SELECT id FROM income WHERE incomeId = ${expenseId}`;
             const exists = await executeQuery(checkQuery);
             if (exists.length > 0) {
