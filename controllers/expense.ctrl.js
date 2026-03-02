@@ -397,8 +397,6 @@ exports.allDashboardData = async (req, res) => {
         (SELECT SUM(amount)
          FROM income
          WHERE userId = ${req.user.id}
-           AND MONTH(income_date) = MONTH(CURRENT_DATE())
-           AND YEAR(income_date) = YEAR(CURRENT_DATE())
         ),
         0
     )
@@ -407,8 +405,6 @@ exports.allDashboardData = async (req, res) => {
         (SELECT SUM(amount)
          FROM expenses
          WHERE userId = ${req.user.id}
-           AND MONTH(expense_date) = MONTH(CURRENT_DATE())
-           AND YEAR(expense_date) = YEAR(CURRENT_DATE())
         ),
         0
     ) AS totalBalance,
@@ -417,8 +413,6 @@ exports.allDashboardData = async (req, res) => {
         (SELECT SUM(amount)
          FROM income
          WHERE userId = ${req.user.id}
-           AND MONTH(income_date) = MONTH(CURRENT_DATE())
-           AND YEAR(income_date) = YEAR(CURRENT_DATE())
         ),
         0
     ) AS totalIncome,
@@ -427,8 +421,6 @@ exports.allDashboardData = async (req, res) => {
         (SELECT SUM(amount)
          FROM expenses
          WHERE userId = ${req.user.id}
-           AND MONTH(expense_date) = MONTH(CURRENT_DATE())
-           AND YEAR(expense_date) = YEAR(CURRENT_DATE())
         ),
         0
     ) AS totalExpense;
