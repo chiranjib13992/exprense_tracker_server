@@ -278,6 +278,30 @@ exports.getAllIncome = async (req, res) => {
     }
 };
 
+exports.getIncomes = async (req, res) => {
+    try {
+        const selectQuery = `
+            SELECT * FROM income 
+            WHERE userId = ? 
+            ORDER BY income_date DESC
+        `;      
+
+        const incomes = await executeQuery(selectQuery, [req.user.id]);
+
+        return res.status(200).json({
+            success: true,
+            data: incomes,
+            count: incomes.length
+        }); 
+    } catch (error) {
+        console.error("Error fetching income:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+};
+
 // Optional: Get income by ID
 exports.getIncomeById = async (req, res) => {
     try {
@@ -442,16 +466,16 @@ exports.allDashboardData = async (req, res) => {
 
 exports.addToSavings = async (req, res) => {
     try {
-        const expenseId = req.body.expenseId;
+        const { incomeId, amount, note } = req.body;
 
-        if (!expenseId) {
+        if (!incomeId) {
             return res.status(400).json({
                 success: false,
                 message: "incomeId are required"
             });
         }
-        if (expenseId) {
-            const checkQuery = `SELECT id FROM income WHERE incomeId = ${expenseId}`;
+        if (incomeId) {
+            const checkQuery = `SELECT id FROM savings WHERE incomeId = ${Number(incomeId)}`;
             const exists = await executeQuery(checkQuery);
             if (exists.length > 0) {
                 return res.status(404).json({
@@ -462,12 +486,14 @@ exports.addToSavings = async (req, res) => {
         }
 
         const insertQuery = `
-            INSERT INTO savings (incomeId)
-            VALUES (?)
+            INSERT INTO savings (incomeId, amount, note)
+            VALUES (?, ?, ?)
         `;
 
         const result = await executeQuery(insertQuery, [
-            expenseId
+            Number(incomeId),
+            amount,
+            note || null
         ]);
 
         return res.status(201).json({
