@@ -284,7 +284,7 @@ exports.getIncomes = async (req, res) => {
             SELECT * FROM income 
             WHERE userId = ? 
             ORDER BY income_date DESC
-        `;      
+        `;
 
         const incomes = await executeQuery(selectQuery, [req.user.id]);
 
@@ -292,7 +292,7 @@ exports.getIncomes = async (req, res) => {
             success: true,
             data: incomes,
             count: incomes.length
-        }); 
+        });
     } catch (error) {
         console.error("Error fetching income:", error);
         return res.status(500).json({
@@ -570,7 +570,7 @@ exports.getAllSavings = async (req, res) => {
             JOIN income i ON s.incomeId = i.id 
             WHERE i.userId = ?
             ORDER BY s.id DESC
-        `;  
+        `;
         const result = await executeQuery(query, [req.user.id]);
         return res.status(200).json({
             success: true,
