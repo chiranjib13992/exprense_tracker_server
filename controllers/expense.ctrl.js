@@ -466,12 +466,37 @@ exports.allDashboardData = async (req, res) => {
 
 exports.addToSavings = async (req, res) => {
     try {
-        const { incomeId, amount, note } = req.body;
+        const { incomeId, amount, note, id} = req.body;
 
         if (!incomeId) {
             return res.status(400).json({
                 success: false,
                 message: "incomeId are required"
+            });
+        }
+
+        if(id) {
+            const checkSavingsQuery = `SELECT id FROM savings WHERE id = ?`;
+            const exists = await executeQuery(checkSavingsQuery, [id]);
+            if (exists.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Savings record not found"
+                });
+            }   
+            const updateQuery = `
+                UPDATE savings 
+                SET amount = ?, note = ?
+                WHERE id = ?
+            `;
+            await executeQuery(updateQuery, [
+                amount,
+                note || null,   
+                id
+            ]); 
+            return res.status(200).json({
+                success: true,
+                message: "Savings updated successfully"
             });
         }
         if (incomeId) {
@@ -576,6 +601,36 @@ exports.getAllSavings = async (req, res) => {
             success: true,
             savings: result
         });
+    } catch (error) {
+        console.error("Error fetching transaction:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+}
+
+exports.getSavingsByid = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const query = `
+            SELECT s.id, s.amount, s.note, s.incomeId, i.source, i.income_date , i.amount as income_amount      
+            FROM savings s
+            JOIN income i ON s.incomeId = i.id 
+            WHERE s.id = ? AND i.userId = ?
+        `;
+        const result = await executeQuery(query, [id, req.user.id]);
+        if (result.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Savings record not found"
+            });
+        }
+        return res.status(200).json({
+            success: true,
+            savings: result[0]
+        }); 
     } catch (error) {
         console.error("Error fetching transaction:", error);
         return res.status(500).json({
