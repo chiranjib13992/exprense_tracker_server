@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { verifyJwtEmpToken } = require('../config/jwtHelper');
-const { createExpense, getExpenses, getCategoryWiseExpenses, createIncome, allDashboardData, addToSavings, getTransactionById, getIncomes } = require('../controllers/expense.ctrl');
+const { createExpense, getExpenses, getCategoryWiseExpenses, createIncome, allDashboardData, addToSavings, getTransactionById, getIncomes, getAllSavings } = require('../controllers/expense.ctrl');
 
 router.post('/create-expense', verifyJwtEmpToken, createExpense );
 router.get('/all-expenses', verifyJwtEmpToken, getExpenses);
@@ -11,5 +11,6 @@ router.get('/all-dashboard-data', verifyJwtEmpToken, allDashboardData);
 router.post('/add-to-savings', verifyJwtEmpToken, addToSavings);
 router.post('/get-transaction', verifyJwtEmpToken, getTransactionById);
 router.get('/all-incomes', verifyJwtEmpToken, getIncomes);
+router.get('/all-savings', verifyJwtEmpToken, getAllSavings);
 
 module.exports = router;

@@ -561,3 +561,26 @@ exports.getTransactionById = async (req, res) => {
         });
     }
 };
+
+exports.getAllSavings = async (req, res) => {
+    try {
+        const query = `
+            SELECT s.id, s.amount, s.note, s.incomeId, i.source, i.income_date , i.amount as income_amount 
+            FROM savings s
+            JOIN income i ON s.incomeId = i.id
+            WHERE i.userId = ?
+            ORDER BY s.id DESC
+        `;  
+        const result = await executeQuery(query, [req.user.id]);
+        return res.status(200).json({
+            success: true,
+            savings: result
+        });
+    } catch (error) {
+        console.error("Error fetching transaction:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+}
