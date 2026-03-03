@@ -3,7 +3,7 @@ const router = express.Router();
 const { verifyJwtEmpToken } = require('../config/jwtHelper');
 const { createExpense, getExpenses, getCategoryWiseExpenses, createIncome, allDashboardData, addToSavings, getTransactionById, getIncomes, getAllSavings } = require('../controllers/expense.ctrl');
 
-router.post('/create-expense', verifyJwtEmpToken, createExpense );
+router.post('/create-expense', verifyJwtEmpToken, createExpense);
 router.get('/all-expenses', verifyJwtEmpToken, getExpenses);
 router.get('/categoriwise-expenses', verifyJwtEmpToken, getCategoryWiseExpenses);
 router.post('/create-income', verifyJwtEmpToken, createIncome);
