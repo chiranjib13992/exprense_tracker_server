@@ -567,7 +567,7 @@ exports.getAllSavings = async (req, res) => {
         const query = `
             SELECT s.id, s.amount, s.note, s.incomeId, i.source, i.income_date , i.amount as income_amount 
             FROM savings s
-            JOIN income i ON s.incomeId = i.id
+            JOIN income i ON s.incomeId = i.id 
             WHERE i.userId = ?
             ORDER BY s.id DESC
         `;  
