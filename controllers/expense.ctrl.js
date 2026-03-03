@@ -447,7 +447,16 @@ exports.allDashboardData = async (req, res) => {
          WHERE userId = ${req.user.id}
         ),
         0
-    ) AS totalExpense;
+    ) AS totalExpense, 
+    COALESCE(
+        (SELECT SUM(saving.amount)
+         FROM savings as saving
+         JOIN income as i ON saving.incomeId = i.id
+         WHERE i.userId = ${req.user.id}
+        ),
+        0
+    ) AS totalSavings
+    ;
 
         `;
         const result = await executeQuery(selectQuery);
