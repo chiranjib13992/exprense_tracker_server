@@ -5,10 +5,11 @@ CREATE PROCEDURE insertUser(
     IN p_email VARCHAR(100),
     IN p_phone VARCHAR(25),
     IN p_password VARCHAR(255)
+    IN p_budgetbodyId VARCHAR(55)
 )
 BEGIN
-    INSERT INTO users (name, email, phone, password)
-    VALUES (p_name, p_email, p_phone, p_password);
+    INSERT INTO users (name, email, phone, password, budgetbodyId)
+    VALUES (p_name, p_email, p_phone, p_password, p_budgetbodyId);
 END //
 
 DELIMITER ;

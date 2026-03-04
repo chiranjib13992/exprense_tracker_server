@@ -19,8 +19,25 @@ exports.signUp = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const insertUserQuery = 'CALL insertUser(?, ?, ?, ?)';
-        await executeQuery(insertUserQuery, [name, email, phone, hashedPassword]);
+        const counterResult = await executeQuery(
+            'SELECT count FROM counter WHERE type = ?',
+            ['userDetails']
+        );
+
+        if (counterResult.length === 0) {
+            return res.status(500).json({ message: 'Counter not initialized' });
+        }
+
+        let currentCount = counterResult[0].count + 1;
+        await executeQuery(
+            'UPDATE counter SET count = ? WHERE type = ?',
+            [currentCount, 'userDetails']
+        );
+        const shortName = name.substring(0, 4);
+        const budgetbodyId = `${shortName}${currentCount}`;
+
+        const insertUserQuery = 'CALL insertUser(?, ?, ?, ?, ?)';
+        await executeQuery(insertUserQuery, [name, email, phone, hashedPassword, budgetbodyId]);
 
         return res.status(201).json({ message: '✅ User created successfully' });
 
