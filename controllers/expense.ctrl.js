@@ -475,7 +475,7 @@ exports.allDashboardData = async (req, res) => {
 
 exports.addToSavings = async (req, res) => {
     try {
-        const { incomeId, amount, note, id} = req.body;
+        const { incomeId, amount, note, id } = req.body;
 
         if (!incomeId) {
             return res.status(400).json({
@@ -484,7 +484,7 @@ exports.addToSavings = async (req, res) => {
             });
         }
 
-        if(id) {
+        if (id) {
             const checkSavingsQuery = `SELECT id FROM savings WHERE id = ?`;
             const exists = await executeQuery(checkSavingsQuery, [id]);
             if (exists.length === 0) {
@@ -492,7 +492,7 @@ exports.addToSavings = async (req, res) => {
                     success: false,
                     message: "Savings record not found"
                 });
-            }   
+            }
             const updateQuery = `
                 UPDATE savings 
                 SET amount = ?, note = ?
@@ -500,9 +500,9 @@ exports.addToSavings = async (req, res) => {
             `;
             await executeQuery(updateQuery, [
                 amount,
-                note || null,   
+                note || null,
                 id
-            ]); 
+            ]);
             return res.status(200).json({
                 success: true,
                 message: "Savings updated successfully"
@@ -639,7 +639,7 @@ exports.getSavingsByid = async (req, res) => {
         return res.status(200).json({
             success: true,
             savings: result[0]
-        }); 
+        });
     } catch (error) {
         console.error("Error fetching transaction:", error);
         return res.status(500).json({
