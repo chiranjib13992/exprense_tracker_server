@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { signUp, signIn } = require('../controllers/user.ctrl');
+const { verifyJwtEmpToken } = require('../config/jwtHelper');
+const { signUp, signIn, getUserProfile } = require('../controllers/user.ctrl');
 
 router.post('/user/userSignup', signUp);
-router.post('/user/signIn', signIn);
+router.post('/user/userSignIn', signIn);
+router.get('/user/findProfile', verifyJwtEmpToken, getUserProfile);
 
 module.exports = router;

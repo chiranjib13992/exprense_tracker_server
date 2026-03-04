@@ -71,6 +71,27 @@ exports.signIn = (req, res, next) => {
     })(req, res, next);
 }
 
+exports.getUserProfile = async (req, res) => {
+    try {
+        const budgetbodyId = req.body.budgetbodyId;
+
+        const userResult = await executeQuery(
+            'SELECT user_id, name, email, phone FROM users WHERE budgetbodyId = ?',
+            [budgetbodyId]
+        );
+
+        if (userResult.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        return res.status(200).json({ user: userResult[0] });
+
+    } catch (err) {
+        console.error('❌ Signup Error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
 function generateJwt(user) {
     return jwt.sign(
         { id: user.user_id, email: user.email, name: user.name },
