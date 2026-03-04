@@ -55,9 +55,9 @@ exports.signIn = (req, res, next) => {
 }
 
 function generateJwt(user) {
-  return jwt.sign(
-    { id: user.user_id, email: user.email, name: user.name },
-    process.env.JWT_SECRET,
-    { expiresIn: '7d' }
-  );
+    return jwt.sign(
+        { id: user.user_id, email: user.email, name: user.name },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+    );
 }
