@@ -5,6 +5,6 @@ const { signUp, signIn, getUserProfile } = require('../controllers/user.ctrl');
 
 router.post('/user/userSignup', signUp);
 router.post('/user/userSignIn', signIn);
-router.get('/user/findProfile', verifyJwtEmpToken, getUserProfile);
+router.post('/user/findProfile', verifyJwtEmpToken, getUserProfile);
 
 module.exports = router;

@@ -5,7 +5,7 @@ CREATE TABLE trip_members (
     joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
 
     UNIQUE (trip_id, user_id)
 );

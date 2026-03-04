@@ -35,6 +35,7 @@ app.use(express.urlencoded({
 
 app.use('/api', userRouter);
 app.use('/api/expense', expenseRouter);
+app.use('/api/trip', require('./routers/trip.route'));
 app.use(passport.initialize());
 
 app.use(function (req, res, next) {
